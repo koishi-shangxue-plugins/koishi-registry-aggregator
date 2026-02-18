@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	mirrorURL  = "https://raw.githubusercontent.com/Hoshino-Yumetsuki/koishi-registry/refs/heads/pages/index.json"
+	mirrorURL  = "https://raw.githubusercontent.com/koishi-actions/registry/refs/heads/dist/index.json"
 	outputFile = "market.json"
 )
 
