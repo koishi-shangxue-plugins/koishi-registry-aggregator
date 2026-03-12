@@ -2,7 +2,7 @@
 
 本项目已从**多镜像源整合**转变为**单一镜像源同步分发**，
 
-专门同步 [Q78KG/Hoshino-Yumetsuki](https://github.com/Hoshino-Yumetsuki/koishi-registry) 的插件市场数据并分发内容。
+专门同步 [koishi-actions/registry](https://github.com/koishi-actions/registry) 的插件市场数据并分发内容。
 
 > 仓库地址： https://github.com/shangxueink/koishi-registry-aggregator
 > 
@@ -29,6 +29,7 @@
 
 ## 🙏 鸣谢
 
+特别感谢 [koishi-actions](https://github.com/koishi-actions) 提供稳定可靠的 Koishi 插件市场源。
 特别感谢 [Q78KG (Hoshino-Yumetsuki)](https://github.com/Hoshino-Yumetsuki/koishi-registry) 提供稳定可靠的 Koishi 插件市场镜像源。
 
 ## 📝 许可证
