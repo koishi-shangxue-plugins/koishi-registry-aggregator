@@ -1,37 +1,47 @@
-## Koishi Registry Sync
+# Koishi Registry Aggregator (Aggregator)
 
-本项目已从**多镜像源整合**转变为**单一镜像源同步分发**，
+本项目用于同步并分发 Koishi 官方插件市场（Registry）的数据，主要面向国内用户提供高速、稳定的镜像访问。
 
-专门同步 [koishi-actions/registry](https://github.com/koishi-actions/registry) 的插件市场数据并分发内容。
+## 🌟 特性
 
-> 仓库地址： https://github.com/shangxueink/koishi-registry-aggregator
-> 
-> 镜像仓库地址： https://gitee.com/shangxueink/koishi-registry-aggregator
+- **自动重定向跟踪**：自动获取 Koishi 官方最新的 `index.json` 地址（官方采用带哈希的 URL 进行分发）。
+- **国内分发优化**：通过 Gitee 和多种 CDN 镜像，解决国内访问 GitHub 或官方 Registry 缓慢的问题。
+- **自动缓存刷新**：集成 jsDelivr 等 CDN 的自动缓存刷新机制。
+- **定时更新**：通过 GitHub Actions 自动保持数据最新。
 
-## 📦 使用方法
+## 📦 镜像地址
 
-### 访问
+您可以直接在 Koishi 的设置中使用以下地址作为插件市场源：
 
-| 镜像源                                                                                                            | 更新及时性            | 访问稳定性 | 推荐场景         |
-| ----------------------------------------------------------------------------------------------------------------- | --------------------- | ---------- | ---------------- |
-| [Gitee 镜像](https://gitee.com/shangxueink/koishi-registry-aggregator/raw/gh-pages/market.json)                   | ⭐⭐⭐⭐ 延迟同步        | ⭐⭐⭐⭐ 较佳 | 国内用户首选     |
-| [JSDMirror CDN](https://cdn.jsdmirror.com/gh/shangxueink/koishi-registry-aggregator@gh-pages/market.json)         | ⭐⭐ 延迟更新（几小时） | ⭐⭐⭐⭐⭐ 极佳 | 国内用户稳定访问 |
-| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/shangxueink/koishi-registry-aggregator@gh-pages/market.json)           | ⭐⭐ 延迟更新（几小时） | ⭐⭐⭐⭐ 良好  | 通用备用方案     |
-| [GitHub Pages](https://shangxueink.github.io/koishi-registry-aggregator/market.json)                              | ⭐⭐⭐⭐⭐ 实时同步        | ⭐⭐⭐ 一般   | 开发测试使用     |
-| [GitHub Raw](https://github.com/shangxueink/koishi-registry-aggregator/raw/refs/heads/gh-pages/market.json)       | ⭐⭐⭐⭐⭐ 实时同步        | ⭐⭐⭐ 一般   | GitHub环境使用   |
-| [GitHub Releases](https://github.com/shangxueink/koishi-registry-aggregator/releases/download/latest/market.json) | ⭐⭐⭐⭐⭐ 实时同步        | ⭐⭐⭐ 一般   | Releases专用     |
+| 镜像源 | 链接 | 更新及时性 | 推荐场景 |
+| :--- | :--- | :--- | :--- |
+| **Gitee 镜像 (推荐)** | `https://gitee.com/shangxueink/koishi-registry-aggregator/raw/gh-pages/market.json` | ⭐⭐⭐⭐ | 国内用户首选 |
+| **JSDMirror CDN** | `https://cdn.jsdmirror.com/gh/shangxueink/koishi-registry-aggregator@gh-pages/market.json` | ⭐⭐⭐ | 极其稳定 |
+| **jsDelivr CDN** | `https://cdn.jsdelivr.net/gh/shangxueink/koishi-registry-aggregator@gh-pages/market.json` | ⭐⭐ | 备用方案 |
+| **GitHub Pages** | `https://shangxueink.github.io/koishi-registry-aggregator/market.json` | ⭐⭐⭐⭐⭐ | 海外/开发环境 |
 
 ## ⚙️ 工作原理
 
-1. **定时同步**：通过 GitHub Actions 每5分钟从 Q78KG 镜像源获取最新数据
-2. **CDN加速**：自动刷新 jsDelivr CDN 缓存，确保全球访问速度
-3. **双平台分发**：同步部署到 GitHub Pages 和 Gitee 仓库
+1. **探测**：程序访问 `https://registry.koishi.chat/`。
+2. **重定向**：跟随官方的 302 重定向，获取形如 `index.[hash].json` 的真实数据地址。
+3. **拉取**：下载最新的插件市场 JSON 数据。
+4. **分发**：将数据保存为 `market.json` 并通过 GitHub Actions 推送到各分发渠道。
+5. **刷新**：触发 CDN 缓存刷新接口。
+
+## 🛠️ 开发与贡献
+
+如果您想本地运行或改进本项目：
+
+```bash
+# 运行同步程序
+go run main.go
+```
 
 ## 🙏 鸣谢
 
-特别感谢 [koishi-actions](https://github.com/koishi-actions) 提供稳定可靠的 Koishi 插件市场源。
-特别感谢 [Q78KG (Hoshino-Yumetsuki)](https://github.com/Hoshino-Yumetsuki/koishi-registry) 提供稳定可靠的 Koishi 插件市场镜像源。
+- [Koishi](https://koishi.chat/) - 强大的跨平台机器人框架。
+- [Koishi Registry](https://registry.koishi.chat/) - 官方插件市场。
 
 ## 📝 许可证
 
-MIT
+本项目遵循 [MIT](LICENSE) 许可证。

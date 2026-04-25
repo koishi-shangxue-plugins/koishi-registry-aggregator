@@ -10,30 +10,32 @@ import (
 )
 
 const (
-	mirrorURL  = "https://raw.githubusercontent.com/koishi-actions/registry/refs/heads/dist/index.json"
-	outputFile = "market.json"
+	registryURL = "https://registry.koishi.chat/"
+	outputFile  = "market.json"
 )
 
 // 需要刷新的CDN URL列表
 var purgeURLs = []string{
 	"https://purge.jsdelivr.net/gh/shangxueink/koishi-registry-aggregator@gh-pages/market.json",
-	"https://purge.jsdelivr.net/gh/Hoshino-Yumetsuki/koishi-registry@pages/index.json",
 }
 
 func main() {
-	fmt.Println("开始同步 Hoshino-Yumetsuki 镜像源...")
+	fmt.Println("开始同步 Koishi 官方镜像源...")
 
 	// 获取镜像源数据
-	registryData, err := fetchRegistry()
+	registryData, actualURL, err := fetchRegistry()
 	if err != nil {
 		fmt.Printf("获取镜像源失败: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("成功获取镜像源: %s, 包含 %d 个插件\n", mirrorURL, len(registryData["objects"].([]interface{})))
+	// 验证数据结构
+	objects, ok := registryData["objects"].([]interface{})
+	if !ok {
+		fmt.Println("警告: 无法解析 objects 字段，可能数据结构已改变")
+	}
 
-	// // 更新时间为当前时间
-	// registryData["time"] = time.Now().UTC().Format(time.RFC1123)
+	fmt.Printf("成功从 %s 获取镜像源，包含 %d 个插件\n", actualURL, len(objects))
 
 	// 写入文件
 	if err := writeRegistryFile(registryData); err != nil {
@@ -51,34 +53,43 @@ func main() {
 	}
 }
 
-// 获取镜像源数据
-func fetchRegistry() (map[string]interface{}, error) {
-	resp, err := http.Get(mirrorURL)
+// 获取镜像源数据，支持重定向
+func fetchRegistry() (map[string]interface{}, string, error) {
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return nil // 默认跟随重定向
+		},
+	}
+
+	resp, err := client.Get(registryURL)
 	if err != nil {
-		return nil, fmt.Errorf("HTTP请求失败: %v", err)
+		return nil, "", fmt.Errorf("HTTP请求失败: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP状态码: %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("HTTP状态码: %d", resp.StatusCode)
 	}
+
+	actualURL := resp.Request.URL.String()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("读取响应体失败: %v", err)
+		return nil, "", fmt.Errorf("读取响应体失败: %v", err)
 	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("JSON解析失败: %v", err)
+		return nil, "", fmt.Errorf("JSON解析失败: %v", err)
 	}
 
-	return data, nil
+	return data, actualURL, nil
 }
 
 // 写入registry文件
 func writeRegistryFile(data map[string]interface{}) error {
-	jsonData, err := json.Marshal(data)
+	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("JSON序列化失败: %v", err)
 	}
