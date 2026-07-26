@@ -2,8 +2,7 @@ name: aggregate-and-deploy
 
 on:
   schedule:
-    # 每5分钟运行一次
-    - cron: '*/5 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:
     # 允许手动触发
 
